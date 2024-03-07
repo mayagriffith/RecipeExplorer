@@ -14,11 +14,19 @@ df = pd.read_csv(data_path)
 
 df_clean = df[df['alcoholic'] == False]
 columns = df.columns.tolist()
-print(columns)
+# print(columns)
+
+#drop the rows that have a 
+df_clean = df_clean.dropna()
+
+df_clean = df_clean.drop_duplicates(subset='title')
 
 
 print('size of regular df', df.shape[0])
 print('size of cleaned df', df_clean.shape[0])
+
+print(df_clean.describe())
+
 
 # Data Exploration
 # print(df.head())
