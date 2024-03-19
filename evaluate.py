@@ -86,4 +86,7 @@ plt.imshow(conf_matrix)
 plt.colorbar()
 plt.xlabel("True Class")
 plt.ylabel("Predicted Class")
+plt.xticks(ticks=range(len(conf_matrix)), labels=['Class 0 (Dislike)', 'Class 1 (Like)'])  # Optional: adjust as per your classes
+plt.yticks(ticks=range(len(conf_matrix)), labels=['Class 0 (Dislike)', 'Class 1 (Like)'])
 plt.title("Confusion Matrix Heatmap for User Preference Model")
+plt.tight_layout()
