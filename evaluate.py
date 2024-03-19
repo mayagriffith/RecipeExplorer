@@ -17,7 +17,7 @@ from matplotlib import pyplot as plt
 
 # get data- compile all user data for user- independent evaluation
 path = 'cleanedVotes/'
-names = ["Alaina", "maya", "nate", "nick"] 
+names = ["Alaina", "maya", "nate", "nick", "Rider"] 
 # initialize df for combined votes
 combined_votes = pd.DataFrame()
 for name in names:
