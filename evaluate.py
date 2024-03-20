@@ -248,6 +248,7 @@ representing that our model may be overfitting.
 NEXT STEPS
 Overall, this model is a good starting point but there is certainly room for 
 improvement as it is only slightly better than random. Next steps: investigate
-ways to improve feature selection, use random search to fine tune model 
-parameters, implement regularization, attempt to get more data.
+ways to improve feature selection, implement regularization using random 
+search to fine tune hyperparam C and trying penalties other than L2/ ridge,
+attempt to get more data.
 """
