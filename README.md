@@ -10,3 +10,5 @@ Run votes/standardize_votes.py to get clean votes, that are able to be used as d
 User_pref.py is a logistic regression model that takes a user's votes into account and will give recipes that most fit their preference model. Must run votes/standardize_votes.py to get clean data for this to use.
 
 Create_votes.py allows a user to vote on random recipes, that will be used as data in the user preference model.
+
+Evaluate.py allows a user to view performance metrics for the user preference model. Includes a classification report, ROC curve and ROC-AUC calculation, and confusion matrix visualization. 

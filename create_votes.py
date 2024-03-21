@@ -45,17 +45,22 @@ def vote_recipe(df):
 
     return liked_recipes + disliked_recipes  # Combine the lists
 
-def main():
+def get_name():
+    name = input("What is your name?")
+    return name
 
+def main():
+    # get name
+    name = get_name()
     # Collect votes
     recipes = vote_recipe(df)
 
     recipe_df = pd.DataFrame(recipes, columns=['Title', 'Vote'])
 
     # Save to CSV without column headers
-    recipe_df.to_csv('votes/maya.csv', index=False, header=False)
+    recipe_df.to_csv(f'cleanedVotes/{name}.csv', index=False, header=False)
 
-    print("Voting complete. Data saved to maya.csv.")
+    print(f"Voting complete. Data saved to {name}.csv.")
 
 # Check if the script is the main program and run it
 if __name__ == "__main__":
