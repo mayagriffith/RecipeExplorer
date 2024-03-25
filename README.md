@@ -11,4 +11,4 @@ User_pref.py is a logistic regression model that takes a user's votes into accou
 
 Create_votes.py allows a user to vote on random recipes, that will be used as data in the user preference model.
 
-Evaluate.py allows a user to view performance metrics for the user preference model. Includes a classification report, ROC curve and ROC-AUC calculation, and confusion matrix visualization. 
+Evaluate.py allows a user to view performance metrics for the user preference and recommendation models. For the user preference model: includes user independent evaluation as well as leave-one-group-out cross-validation, average accuracy and F1 scores over folds, ROC curve and ROC-AUC calculation, and confusion matrix visualization. For the recommendation model: includes silhouette score calculation and t-SNE reduced dimensionality visualization of clusters.
