@@ -85,6 +85,7 @@ def user_independent_user_pref():
     # area under curve
     roc_auc = auc(fpr, tpr)
     
+    
     # plot
     plt.figure()
     plt.plot(fpr, tpr, label=f"AUC = {roc_auc}")
@@ -93,6 +94,9 @@ def user_independent_user_pref():
     plt.title("ROC Curve for User Preference Model with User-Independent Evaluation")
     plt.legend(loc="lower right")
     plt.show()
+    # save plot
+    filename = "ROC_User_Pref_Model_User-Independent_Evaluation.png"
+    plt.savefig(filename)
     
     # Confusion Matrix
     conf_matrix = confusion_matrix(y_test, y_pred)
@@ -106,6 +110,9 @@ def user_independent_user_pref():
     plt.yticks(ticks=range(len(conf_matrix)), labels=['Class 0 (Dislike)', 'Class 1 (Like)'])
     plt.title("Confusion Matrix Heatmap for User Preference Model with User-Independent Evaluation")
     plt.tight_layout()
+    # save
+    filename = "Conf_Matrix_User_Pref_Model_User-Independent_Evaluation.png"
+    plt.savefig(filename)
     
     return combined_df
 
@@ -178,7 +185,7 @@ def logocv_user_pref(combined_df):
     conf_matrix = confusion_matrix(true_labels, pred_labels)
     print("User Pref LOGOCV Confusion Matrix\n", conf_matrix)
     plt.figure()
-    plt.imshow(conf_matrix)
+    plt.imshow(conf_matrix, cmap="Blues")
     plt.colorbar()
     plt.xlabel("True Class")
     plt.ylabel("Predicted Class")
@@ -186,6 +193,9 @@ def logocv_user_pref(combined_df):
     plt.yticks(ticks=range(len(conf_matrix)), labels=['Class 0 (Dislike)', 'Class 1 (Like)'])
     plt.title("Confusion Matrix Heatmap for User Preference Model with LOGOCV")
     plt.tight_layout()
+    # save
+    filename = "Conf_Matrix_User_Pref_Model_LOGOCV.png"
+    plt.savefig(filename)
     
     # compute and plot ROC curve with AUC
     fpr, tpr, thresholds = roc_curve(true_labels, pred_scores) 
@@ -198,6 +208,9 @@ def logocv_user_pref(combined_df):
     plt.title("ROC Curve for User Preference Model with LOGOCV")
     plt.legend(loc="lower right")
     plt.show()
+    # save
+    filename = "ROC_User_Pref_Model_LOGOCV.png"
+    plt.savefig(filename)
 
 """
 As expected, LOGOCV shows slightly worse model preformance as it is a more
@@ -255,6 +268,9 @@ def train_test_user_pref(combined_df):
     plt.title("Train vs. Test Error For User Preference Model")
     plt.legend()
     plt.show()
+    # save
+    filename = "Train_Test_User_Pref_Model.png"
+    plt.savefig(filename)
 
 """
 The plot shows relatively low training error with relatively high test error,
@@ -281,6 +297,9 @@ def silhouette_score_recommendation(clusters_range, macro_ratios_df):
     plt.ylabel('Silhouette Score')
     plt.title('Silhouette Score for Various Numbers of Clusters')
     plt.show()
+    # save
+    filename = "Sil_Score_Recommendation_Model.png"
+    plt.savefig(filename)
     return sil_scores, macro_ratios_df
     
 #%% K Means Recommendation Model Visualization
@@ -306,10 +325,13 @@ def visualize_recommendation_tsne(macro_ratios_df):
     for i in range(num_clusters_tsne):
         tsne_cluster = results[cluster_labels == i]
         plt.scatter(tsne_cluster[:,0], tsne_cluster[:,1], label=f"Cluster {i+1}", s=10)
-    plt.title("t-SNE Reduced Dimensionality Visualization of Clusters for K-Means Recommendation Model")
+    plt.title("t-SNE Reduced Dimensionality Visualization of Clusters")
     plt.legend(title="Cluster Labels")
     plt.tight_layout()
     plt.show()
+    # save
+    filename = "Visualization_Recommendation_Clusters.png"
+    plt.savefig(filename)
     
 def visualize_recommendation_3D(macro_ratios_df):
     # create k means model
@@ -377,3 +399,4 @@ Clusters are close together, a likely explanation for why our max silhouette
 score (for 4 clusters, which is the number being used for this visualization)
 was .47 instead of closer to 1
 """
+print(combined_df.head())
