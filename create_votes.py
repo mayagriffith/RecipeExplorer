@@ -2,6 +2,9 @@ import pandas as pd
 import random
 import os
 
+# A per-category target for the number of votes.
+TARGET = 100
+
 current_directory = os.getcwd()
 extract_path = os.path.join(current_directory, "RecipeData")
 csv_file = 'cleaned_recipes.csv'
@@ -29,13 +32,13 @@ def vote_recipe(df):
     disliked_recipes = []
     shown_recipes = set()  # Set to keep track of recipes that have been voted on
 
-    while len(liked_recipes) < 50 or len(disliked_recipes) < 50:
+    while len(liked_recipes) < TARGET or len(disliked_recipes) < TARGET:
         title, ingredients = show_recipe(df, shown_recipes)
         vote = input("Do you like this recipe? Enter 1 for Yes, 0 for No: ")
 
-        if vote == '1' and len(liked_recipes) < 50:
+        if vote == '1' and len(liked_recipes) < TARGET:
             liked_recipes.append((title, 1))
-        elif vote == '0' and len(disliked_recipes) < 50:
+        elif vote == '0' and len(disliked_recipes) < TARGET:
             disliked_recipes.append((title, 0))
         else:
             print("Invalid input or maximum votes reached for the category.")
