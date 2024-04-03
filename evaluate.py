@@ -13,7 +13,7 @@ import cluster_search as cluster
 import pandas as pd
 import numpy as np
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.model_selection import train_test_split, LeaveOneGroupOut
+from sklearn.model_selection import train_test_split, LeaveOneGroupOut, KFold
 from sklearn.metrics import (classification_report, roc_curve, auc,
                              confusion_matrix, accuracy_score, f1_score,
                              silhouette_score)
@@ -26,10 +26,13 @@ from mpl_toolkits.mplot3d import Axes3D
 User-independent evaluation of user preference model. Includes classification 
 report, ROC curve with AUC, confusion matrix. Shows that our model is slightly 
 better than random, but may not be the best approach due to limited data 
-(we have only 5 subjects). See below for LOGOCV (leave one group out CV)
+(we have only 5 subjects). See below for LOGOCV (leave one group out CV) and Kfold
 """
 
 def user_independent_user_pref():
+    """
+    Really just to make combined df because were doing k fold instead
+    """
     # get data- compile all user data for user- independent evaluation
     path = 'cleanedVotes/'
     names = ["Alaina", "maya", "nate", "nick", "Rider"] 
@@ -50,6 +53,7 @@ def user_independent_user_pref():
     
     # split dataset into train and test based on user id for user independent evaluation
     # using 20% of data for testing
+    """
     train_users, test_users = train_test_split(names, test_size=.2, random_state=42)
     train_combined = combined_df[combined_df["user_id"].isin(train_users)]
     test_combined = combined_df[combined_df["user_id"].isin(test_users)]
@@ -113,6 +117,7 @@ def user_independent_user_pref():
     # save
     filename = "Conf_Matrix_User_Pref_Model_User-Independent_Evaluation.png"
     plt.savefig(filename)
+    """
     
     return combined_df
 
@@ -217,6 +222,108 @@ As expected, LOGOCV shows slightly worse model preformance as it is a more
 robust technique for evaluating a model when data is limited like we have
 in this case. 
 """
+
+#%% User Preference Model K fold CV evaluation
+"""
+Independently performing CV on each user for which we have data to make assessment
+more akin to real-world scenario
+"""
+def k_fold_CV(combined_df):
+    """
+    Generate user-specific accuracies and f1 scores that can later be aggregated
+    for an assessment of overall model performance
+    
+    Generate confusion matrix and ROC curve for aggregate results
+    """
+    # drop title from whole df
+    CV_df = combined_df.drop(["title"], axis=1)
+    
+    # initialize lists for all metrics
+    accuracies = []
+    f1s = []
+    true_labels = []
+    pred_labels = []
+    pred_scores = []
+    
+    # set num folds
+    folds = 3 # using 3 bc we have a small to medium dataset
+    
+    # group by user
+    grouped_df = CV_df.groupby("user_id")
+    
+    # prepare data for each group
+    for user_id, group in grouped_df:
+        # get features
+        X = group.drop(columns=["user_id", "vote"]).values
+        # get targets
+        y = group["vote"].values
+        
+        # initialize K fold CV
+        kf = KFold(n_splits = folds)
+        
+        # initialize lists for current user metrics
+        accuracy = []
+        f1 = []
+        
+        # train and predict, get metrics
+        for train_idx, test_idx in kf.split(X):
+            # set data for this split
+            X_train, X_test = X[train_idx], X[test_idx]
+            y_train, y_test = y[train_idx], y[test_idx]
+            
+            # train and predict
+            log_reg_model, y_pred, y_scores = pref.train_predict_model(X_train, y_train, X_test)
+            
+            # evaluate- get metrics
+            ind_accuracy = accuracy_score(y_test, y_pred)
+            ind_f1 = f1_score(y_test, y_pred)
+            
+            # store metrics
+            accuracy.append(ind_accuracy)
+            f1.append(ind_f1)
+            
+            # store labels and scores 
+            true_labels.extend(y_test)
+            pred_labels.extend(y_pred)
+            pred_scores.extend(y_scores)
+            
+        # store avg user results in overall list
+        accuracies.append(np.mean(accuracy))
+        f1s.append(np.mean(f1))
+        
+    # compute and plot confusion matrix
+    conf_matrix = confusion_matrix(true_labels, pred_labels)
+    print("User Pref KFold Aggregate Confusion Matrix\n", conf_matrix)
+    plt.figure()
+    plt.imshow(conf_matrix, cmap="Blues")
+    plt.colorbar()
+    plt.xlabel("True Class")
+    plt.ylabel("Predicted Class")
+    plt.xticks(ticks=range(len(conf_matrix)), labels=['Class 0 (Dislike)', 'Class 1 (Like)'])
+    plt.yticks(ticks=range(len(conf_matrix)), labels=['Class 0 (Dislike)', 'Class 1 (Like)'])
+    plt.title(f"Aggregate Confusion Matrix Heatmap for User Preference Model with KFold CV")
+    plt.tight_layout()
+    # save
+    filename = "Conf_Matrix_User_Pref_Model_KFold.png"
+    plt.savefig(filename)
+    
+    # compute and plot ROC curve with AUC
+    fpr, tpr, thresholds = roc_curve(true_labels, pred_scores) 
+    roc_auc = auc(fpr, tpr)
+    roc_auc = round(roc_auc, 4)
+    plt.figure()
+    plt.plot(fpr, tpr, label=f"AUC = {roc_auc}")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Aggregate ROC Curve for User Preference Model with KFold CV")
+    plt.legend(loc="lower right")
+    plt.show()
+    # save
+    filename = "ROC_User_Pref_Model_KFold.png"
+    plt.savefig(filename)
+        
+    return accuracies, f1s
+
 #%% Train vs test error for user preference model
 """
 Easy way to tell if our model is over or underfitting to have more indication
@@ -276,7 +383,6 @@ def train_test_user_pref(combined_df):
 The plot shows relatively low training error with relatively high test error,
 representing that our model may be overfitting.
 """
-
 #%% K Means Recommendation Model Silhouette Score Evaluation
 
 def silhouette_score_recommendation(clusters_range, macro_ratios_df):
@@ -360,12 +466,18 @@ def visualize_recommendation_3D(macro_ratios_df):
 # Get ROC with AUC, conf matrix, and classification report for user preference
 # model with user independent evaluation
 combined_df = user_independent_user_pref()
+# this was all logocv method
 # Get ROC with AUC, conf matrix, average accuracy, and average F1 score for 
 #user preference model with logocv
-logocv_user_pref(combined_df)
+#logocv_user_pref(combined_df)
 # Get plot of train v test error for user preference model
-train_test_user_pref(combined_df)
+#train_test_user_pref(combined_df)
 
+# kfold method
+accuracies, f1s = k_fold_CV(combined_df) # these are per user
+# average metrics across users
+avg_accuracy = np.mean(accuracies)
+avg_f1 = np.mean(f1s)
 
 """
 User preference next steps
@@ -374,16 +486,20 @@ improvement as it is only slightly better than random. Next steps: investigate
 ways to improve feature selection, implement regularization using random 
 search to fine tune hyperparam C and trying penalties other than L2/ ridge,
 attempt to get more data.
+
+Results of KFold CV were similar to LOGOCV
 """
 
 # K means recommendation model
 # get data
+"""
 cleaned_recipes_df = cluster.get_cleaned_recipes()
 macro_ratios_df = cluster.get_macro_ratios(cleaned_recipes_df)
 # Silhouette Score plot for recommendation model
 # set cluster range to try
 clusters_range = range(3,17)
 sil_scores, macro_ratios_df = silhouette_score_recommendation(clusters_range, macro_ratios_df)
+"""
 """
 showing that optimal # clusters is 4, but still only has a sil score of .42,
 indicating that there is room for improvement. Next steps: potentially try 
@@ -393,10 +509,10 @@ kmeans++
 # this one (below) is hard to interpret
 #visualize_recommendation_3D(macro_ratios_df)
 # warning this (below) takes a while
-visualize_recommendation_tsne(macro_ratios_df)
+#visualize_recommendation_tsne(macro_ratios_df)
 """
 Clusters are close together, a likely explanation for why our max silhouette 
 score (for 4 clusters, which is the number being used for this visualization)
 was .47 instead of closer to 1
 """
-print(combined_df.head())
+#print(combined_df.head())
