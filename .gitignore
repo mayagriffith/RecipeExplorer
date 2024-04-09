@@ -1,2 +1,4 @@
 RecipeData/
 cleanedVotes/
+__pycache__/
+*.png

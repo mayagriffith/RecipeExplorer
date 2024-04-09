@@ -6,10 +6,12 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import numpy as np
 
-def train_predict_model(X_train, y_train, X_test):
+hyperparams = { 'penalty': 'l2', 'C': 1.129 }
+
+def train_predict_model(X_train, y_train, X_test, **kwargs):
 
     # training a logistic regression model
-    log_reg_model = LogisticRegression(max_iter=10000)
+    log_reg_model = LogisticRegression(max_iter=10000, **kwargs)
     log_reg_model.fit(X_train, y_train)
     
     # get y scores for ROC curve (probailities for positive class)
@@ -41,7 +43,8 @@ if __name__ == "__main__":
     # split data into training and testing
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    log_reg_model, y_pred, y_scores = train_predict_model(X_train,y_train, X_test)
+    log_reg_model, y_pred, y_scores = train_predict_model(
+        X_train, y_train, X_test, **hyperparams)
     
     
     # Identifying recipes not seen before (not voted on)
