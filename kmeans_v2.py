@@ -118,6 +118,26 @@ def reduce(df):
     return TSNE(random_state=42).fit_transform(df)
 
 
+# The results of this suggest that KMeans may be a poor choice of algorithm for
+# this task, and that feature selection won't help.
+#
+# Before, we just used macro ratios as the features. KMeans happily divided the
+# feature set into N roughly equally-sized categories, but the category
+# divisions didn't seem very meaningful. When visualizing the data flattened
+# with TSNE, it looked like totally arbitrary cuts that didn't correlate with
+# the data's structure, and the silhouette scores were quite bad. I'm not sure
+# what this means, but my guess is just that the recipe data itself my not be
+# cleanly separable in the way we want. There may not be well-isolated groups
+# of recipes with similar nutiritional values.
+#
+# So, I tried adding in the raw macro scores and the ingredient / "tag"
+# features, as well. When I do that, I get much better silhouette scores, but
+# KMeans produces highly imbalanced clusters, putting 98+% of elements into one
+# bucket. I guess the good silhouette scores just reflect putting the outliers
+# into their own cluster. Doing some quick searches online, imbalanced clusters
+# are apparently common when running KMeans on sparse, non-continuous data such
+# as binary or categorical data... which is, of course, what I added. So, I
+# don't think these extra features help at all.
 def main():
     for fs_name, df in feature_sets.items():
         print(f'Evaluating feature set: {fs_name}')
