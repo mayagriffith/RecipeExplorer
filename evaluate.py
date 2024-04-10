@@ -396,17 +396,19 @@ representing that our model may be overfitting.
 """
 #%% K Means Recommendation Model Silhouette Score Evaluation
 
-def silhouette_score_recommendation(clusters_range, macro_ratios_df):
+def silhouette_score_recommendation(clusters_range, df):
     # calculate silhouette score for various numbers of clusters
     # initialize list to store scores
     sil_scores = []
     # create model for clusters in range
     for cluster_num in clusters_range:
-        kmean, labels = cluster.create_model(cluster_num, macro_ratios_df,
+        kmean, labels = cluster.create_model(cluster_num, df,
                                              purpose="Sil_score")
-        score = silhouette_score(macro_ratios_df, labels)
+        score = silhouette_score(df, labels)
         sil_scores.append(score)
+    return sil_scores
 
+def visualize_silhouette_score_recommendation(clusters_range, sil_scores):
     # Plot
     plt.figure()
     plt.plot(clusters_range, sil_scores)
@@ -417,7 +419,6 @@ def silhouette_score_recommendation(clusters_range, macro_ratios_df):
     # save
     filename = "Sil_Score_Recommendation_Model.png"
     plt.savefig(filename)
-    return sil_scores, macro_ratios_df
 
 #%% K Means Recommendation Model Visualization
 
@@ -474,6 +475,7 @@ def visualize_recommendation_3D(macro_ratios_df):
 #%% Run
 
 if __name__ == '__main__':
+    """
     # User Preference Model
     # Get ROC with AUC, conf matrix, and classification report for user preference
     # model with user independent evaluation
@@ -493,6 +495,7 @@ if __name__ == '__main__':
     # average metrics across users
     avg_accuracy = np.mean(accuracies)
     avg_f1 = np.mean(f1s)
+    """
 
     """
     User preference next steps
@@ -507,14 +510,12 @@ if __name__ == '__main__':
 
     # K means recommendation model
     # get data
-    """
-    cleaned_recipes_df = cluster.get_cleaned_recipes()
-    macro_ratios_df = cluster.get_macro_ratios(cleaned_recipes_df)
+    macro_ratios_df = cluster.get_macro_ratios()
     # Silhouette Score plot for recommendation model
     # set cluster range to try
     clusters_range = range(3,17)
-    sil_scores, macro_ratios_df = silhouette_score_recommendation(clusters_range, macro_ratios_df)
-    """
+    sil_scores = silhouette_score_recommendation(clusters_range, macro_ratios_df)
+    visualize_silhouette_score_recommendation(clusters_range, sil_scores)
     """
     showing that optimal # clusters is 4, but still only has a sil score of .42,
     indicating that there is room for improvement. Next steps: potentially try

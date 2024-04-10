@@ -1,4 +1,6 @@
 '''
+@author Nick Bosley, Nate Gaylinn
+
 cluster search will (ideally) sort the existing recipes into K groups based on
 the proportions of cal_protein / calories, cal_fat / calories, and cal_carb / calories
 
@@ -20,27 +22,23 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
 
-def get_cleaned_recipes():
+
+def get_df_all_features():
     cleaned_recipes_df = pd.read_csv('RecipeData/cleaned_recipes.csv')
-    
-    # Perhaps can take sodium and other variables into consideration in the future
-    
-    # Drop all columns except the macros, titles, and calories
-    cleaned_recipes_df = cleaned_recipes_df[['title', 'calories', 'protein', 'fat']]
-    
-    # Drop any rows with 0 calories
     cleaned_recipes_df = cleaned_recipes_df[cleaned_recipes_df['calories'] > 0]
-    
-    
-    # Create a carb macro column
-    cleaned_recipes_df['carb'] = (cleaned_recipes_df['calories'] - 4*cleaned_recipes_df['protein'] - 9*cleaned_recipes_df['fat']) / 4
     return cleaned_recipes_df
 
-
-
+def get_df_macros(df_all_features):
+    # Drop all columns except the macros, titles, and calories
+    return df_all_features[['title', 'calories', 'protein', 'fat']]
 
 #%% Find the ratios of calories from carbs/fats/proteins
-def get_macro_ratios(cleaned_recipes_df):
+def get_macro_ratios(cleaned_recipes_df=None):
+    if cleaned_recipes_df is None:
+        cleaned_recipes_df = get_df_macros(get_df_all_features())
+    # Create a macro column.
+    cleaned_recipes_df['carb'] = (cleaned_recipes_df['calories'] - 4*cleaned_recipes_df['protein'] - 9*cleaned_recipes_df['fat']) / 4
+
     macro_ratios_df = pd.DataFrame()
     
     macro_ratios_df['carb_ratio'] = 4 * cleaned_recipes_df['carb'] / cleaned_recipes_df['calories']
@@ -76,8 +74,7 @@ def create_model(n_clusters, macro_ratios_df, purpose="Recommending"):
 
 #%%
 if __name__ == "__main__":
-    cleaned_recipes_df = get_cleaned_recipes()
-    macro_ratios_df = get_macro_ratios(cleaned_recipes_df)
+    macro_ratios_df = get_macro_ratios()
     kmean = create_model(n_clusters, macro_ratios_df)
     
     
