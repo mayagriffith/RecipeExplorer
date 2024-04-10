@@ -118,10 +118,13 @@ def reduce(df):
     return TSNE(random_state=42).fit_transform(df)
 
 
+<<<<<<< HEAD
 # Try running KMeans with several different variations of our data set with
 # different features, and different numbers of desired clusters to try to find
 # a configuration that allows us to partition the data to suit our users.
 #
+=======
+>>>>>>> 3da8864e43ac400f822fc84b525087a7f18dbe71
 # The results of this suggest that KMeans may be a poor choice of algorithm for
 # this task, and that feature selection won't help.
 #
