@@ -8,7 +8,8 @@ Created on Tue Mar 19 14:05:27 2024
 Evaluating Model Performance
 """
 
-import user_pref as pref
+import user_pref as pref_log_reg
+import user_pref_svm as pref_svm
 import cluster_search as cluster
 import pandas as pd
 import numpy as np
@@ -35,7 +36,7 @@ def user_independent_user_pref():
     """
     # get data- compile all user data for user- independent evaluation
     path = 'cleanedVotes/'
-    names = ["Alaina", "maya", "nate", "nick", "Rider"]
+    names = ["Alaina", "maya", "nate", "nick"]
     # initialize df for combined votes
     combined_votes = pd.DataFrame()
     for name in names:
@@ -125,6 +126,8 @@ def user_independent_user_pref():
 """
 LOGOCV (leave one group out cross validation) evaluation of user preference
 model.
+
+Use k fold instead.
 """
 def logocv_user_pref(combined_df):
     # vote is target, user_id is user id (group), features are other col values
@@ -166,7 +169,7 @@ def logocv_user_pref(combined_df):
         X_test = selector.transform(X_test)
 
         # initialize and train model
-        log_reg_model, y_pred, y_scores = pref.train_predict_model(X_train, y_train, X_test)
+        log_reg_model, y_pred, y_scores = pref_log_reg.train_predict_model(X_train, y_train, X_test)
 
         # evaluate
         accuracy = accuracy_score(y_test, y_pred)
@@ -228,12 +231,15 @@ in this case.
 Independently performing CV on each user for which we have data to make assessment
 more akin to real-world scenario
 """
-def k_fold_CV(combined_df, log_reg_args=None):
+def k_fold_CV(combined_df, reg_or_svm="svm", log_reg_args=None, svm_args = None):
     """
     Generate user-specific accuracies and f1 scores that can later be aggregated
     for an assessment of overall model performance
 
     Generate confusion matrix and ROC curve for aggregate results
+    
+    reg_or_svm should be a string, "svm" if evaluating svm user pref model,
+    "reg" if evaluating log reg user pref model. The default is svm.
     """
     # drop title from whole df
     CV_df = combined_df.drop(["title"], axis=1)
@@ -241,6 +247,9 @@ def k_fold_CV(combined_df, log_reg_args=None):
     # Pass an empty dict for kwargs if none was supplied by the caller.
     if log_reg_args is None:
         log_reg_args = {}
+        
+    if svm_args is None:
+        svm_args = {}
 
     # initialize lists for all metrics
     accuracies = []
@@ -274,10 +283,16 @@ def k_fold_CV(combined_df, log_reg_args=None):
             # set data for this split
             X_train, X_test = X[train_idx], X[test_idx]
             y_train, y_test = y[train_idx], y[test_idx]
-
-            # train and predict
-            log_reg_model, y_pred, y_scores = pref.train_predict_model(
-                X_train, y_train, X_test, **log_reg_args)
+            
+            if reg_or_svm == "reg":
+                log_reg_model, y_pred, y_scores = pref_log_reg.train_predict_model(
+                    X_train, y_train, X_test, **log_reg_args)
+            if reg_or_svm == "svm":
+                X_train, X_test = pref_svm.standardize(X_train, X_test, is_kfold=True)
+                svm_model, y_pred, y_scores = pref_svm.train_predict_model(
+                    X_train, y_train, X_test, **svm_args)
+            
+            # train and predict - 
 
             # evaluate- get metrics
             ind_accuracy = accuracy_score(y_test, y_pred)
@@ -310,7 +325,7 @@ def visualize_k_fold_CV(accuracies, f1s, true_labels, pred_labels, pred_scores):
     plt.ylabel("Predicted Class")
     plt.xticks(ticks=range(len(conf_matrix)), labels=['Class 0 (Dislike)', 'Class 1 (Like)'])
     plt.yticks(ticks=range(len(conf_matrix)), labels=['Class 0 (Dislike)', 'Class 1 (Like)'])
-    plt.title(f"Aggregate Confusion Matrix Heatmap for User Preference Model with KFold CV")
+    plt.title("Aggregate Confusion Matrix Heatmap for User Preference Model with KFold CV")
     plt.tight_layout()
     # save
     filename = "Conf_Matrix_User_Pref_Model_KFold.png"
@@ -340,12 +355,23 @@ def visualize_k_fold_CV(accuracies, f1s, true_labels, pred_labels, pred_scores):
 Easy way to tell if our model is over or underfitting to have more indication
 of next steps
 """
-def train_test_user_pref(combined_df):
+def train_test_user_pref(combined_df, reg_or_svm="svm", log_reg_args = None, svm_args = None):
+    """
+    reg_or_svm should be a string, "svm" if evaluating svm user pref model,
+    "reg" if evaluating log reg user pref model. The default is svm.
+    """
     CV_df = combined_df.drop(["title"], axis=1)
     # Features
     X = CV_df.drop(columns=["user_id","vote"]).values
     # target
     y = CV_df["vote"].values
+    
+    # Pass an empty dict for kwargs if none was supplied by the caller.
+    if log_reg_args is None:
+        log_reg_args = {}
+        
+    if svm_args is None:
+        svm_args = {}
 
     # split
     X_train_all, X_test, y_train_all, y_test = train_test_split(X, y, test_size=.2, random_state=42)
@@ -365,35 +391,37 @@ def train_test_user_pref(combined_df):
         selector = VarianceThreshold(threshold=0)
         X_train = selector.fit_transform(X_train)
         X_test = selector.transform(X_test)
-
-        # train model
-        log_reg_model, y_pred, y_scores = pref.train_predict_model(X_train, y_train, X_test)
+        
+        if reg_or_svm == "reg":
+            model, y_pred, y_scores = pref_log_reg.train_predict_model(X_train, y_train, X_test, **log_reg_args)
+        if reg_or_svm == "svm":
+            model, y_pred, y_scores = pref_svm.train_predict_model(X_train, y_train, X_test, **svm_args)
 
         # get and store errors
         # using 1-accuracy because classification with balanced dataset
-        train_error = 1 - accuracy_score(y_train, log_reg_model.predict(X_train))
+        train_error = 1 - accuracy_score(y_train, model.predict(X_train))
         train_error_all.append(train_error)
 
         test_error = 1 - accuracy_score(y_test, y_pred)
         test_error_all.append(test_error)
-
+    
+    if reg_or_svm == "svm":
+        model_type = "SVM"
+    if reg_or_svm == "reg":
+        model_type = "Logistic Regression"
     # plot
     plt.figure()
     plt.plot(train_sizes*100, train_error_all, label="Train")
     plt.plot(train_sizes*100, test_error_all, label="Test")
     plt.xlabel("Training Data Used")
     plt.ylabel("Error (1-Accuracy)")
-    plt.title("Train vs. Test Error For User Preference Model")
+    plt.title(f"Train vs. Test Error For User Preference Model ({model_type})")
     plt.legend()
     plt.show()
     # save
-    filename = "Train_Test_User_Pref_Model.png"
+    filename = f"Train_Test_User_Pref_Model_{model_type}.png"
     plt.savefig(filename)
 
-"""
-The plot shows relatively low training error with relatively high test error,
-representing that our model may be overfitting.
-"""
 #%% K Means Recommendation Model Silhouette Score Evaluation
 
 def silhouette_score_recommendation(clusters_range, df):
@@ -484,17 +512,27 @@ if __name__ == '__main__':
     # Get ROC with AUC, conf matrix, average accuracy, and average F1 score for
     #user preference model with logocv
     #logocv_user_pref(combined_df)
-    # Get plot of train v test error for user preference model
-    #train_test_user_pref(combined_df)
+
 
     # kfold method
-    kfold_results = k_fold_CV(combined_df, pref.hyperparams) # these are per user
+    model_type = input("Are you evaluating the logistic regression or svm user preference model? (enter reg or svm)")
+    
+    if model_type == "reg":
+        kfold_results = k_fold_CV(combined_df, model_type, pref_log_reg.hyperparams, pref_svm.hyperparams) # these are per user
+        #Get plot of train v test error for user preference model
+        train_test_user_pref(combined_df, model_type, pref_log_reg.hyperparams, pref_svm.hyperparams)
+    if model_type == "svm":
+        kfold_results = k_fold_CV(combined_df, model_type, pref_log_reg.hyperparams, pref_svm.hyperparams) # these are per user
+        #Get plot of train v test error for user preference model
+        train_test_user_pref(combined_df, model_type, pref_log_reg.hyperparams, pref_svm.hyperparams)
     accuracies, f1s, _, _, _ = kfold_results
     visualize_k_fold_CV(*kfold_results)
 
     # average metrics across users
     avg_accuracy = np.mean(accuracies)
     avg_f1 = np.mean(f1s)
+    print("accuracy:", avg_accuracy)
+    print("f1:", avg_f1)
     """
 
     """
@@ -518,8 +556,7 @@ if __name__ == '__main__':
     visualize_silhouette_score_recommendation(clusters_range, sil_scores)
     """
     showing that optimal # clusters is 4, but still only has a sil score of .42,
-    indicating that there is room for improvement. Next steps: potentially try
-    kmeans++
+    indicating that there is room for improvement.
     """
     # Visualization of clusters
     # this one (below) is hard to interpret
