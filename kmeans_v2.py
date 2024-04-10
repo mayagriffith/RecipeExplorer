@@ -28,6 +28,9 @@ feature_sets = {
 
 CLUSTERS_RANGE = range(2, 8)
 
+# Data structure to keep track of inputs, outputs, and analysis metadata for
+# one possible configuration of the KMeans algorithm to use for recommending
+# recipes to users.
 class KMeansCandidate:
     def __init__(self, fs_name, df, num_clusters):
         self.fs_name = fs_name
@@ -37,6 +40,7 @@ class KMeansCandidate:
         self.labels = self.model.fit_predict(df)
         self.sil_score = silhouette_score(df, self.labels)
 
+    # Visualize the reduced dimension data frame using this candidate's cluster labels
     def show_clusters(self, reduced_df):
         plt.figure()
         for i in range(self.num_clusters):
@@ -63,6 +67,8 @@ class KMeansCandidate:
         best_fit_score = 'TODO'
         return best_label, best_fit_score
 
+
+# Try running KMeans on the given data for a variety of cluster sizes.
 def sweep_cluster_size(fs_name, df):
     candidates = []
     max_sil_score = 0.0
@@ -77,6 +83,10 @@ def sweep_cluster_size(fs_name, df):
     print()
     return candidates, max_sil_score
 
+
+# Do further analysis to visualize the quality of categories discovered for a
+# particular set of features. Considers only cluster counts that produced a
+# silhouette score close to the best for this feature set.
 def evaluate_candidates(candidates, max_sil_score, reduced_df):
     candidates = [
         candidate for candidate in candidates
@@ -93,6 +103,8 @@ def evaluate_candidates(candidates, max_sil_score, reduced_df):
         print(f'cluster sizes: {counts}')
     print()
 
+
+# Project the data in df into two dimensions for visualization.
 def reduce(df):
     # standardize
     df = StandardScaler().fit_transform(df)
