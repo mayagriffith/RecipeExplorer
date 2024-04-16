@@ -235,12 +235,15 @@ def k_fold_CV(combined_df, reg_or_svm="svm", log_reg_args=None, svm_args = None)
     """
     Generate user-specific accuracies and f1 scores that can later be aggregated
     for an assessment of overall model performance
+    
+    Importance threshold must match that in user_pref_svm for accurate results
 
     Generate confusion matrix and ROC curve for aggregate results
     
     reg_or_svm should be a string, "svm" if evaluating svm user pref model,
     "reg" if evaluating log reg user pref model. The default is svm.
     """
+    importance_threshold = 0.00001
     # drop title from whole df
     CV_df = combined_df.drop(["title"], axis=1)
 
@@ -267,9 +270,9 @@ def k_fold_CV(combined_df, reg_or_svm="svm", log_reg_args=None, svm_args = None)
     # prepare data for each group
     for user_id, group in grouped_df:
         # get features
-        X = group.drop(columns=["user_id", "vote"]).values
+        X = group.drop(columns=["user_id", "vote"])
         # get targets
-        y = group["vote"].values
+        y = group["vote"]
 
         # initialize K fold CV
         kf = KFold(n_splits = folds)
@@ -281,14 +284,14 @@ def k_fold_CV(combined_df, reg_or_svm="svm", log_reg_args=None, svm_args = None)
         # train and predict, get metrics
         for train_idx, test_idx in kf.split(X):
             # set data for this split
-            X_train, X_test = X[train_idx], X[test_idx]
-            y_train, y_test = y[train_idx], y[test_idx]
+            X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+            y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
             
             if reg_or_svm == "reg":
                 log_reg_model, y_pred, y_scores = pref_log_reg.train_predict_model(
                     X_train, y_train, X_test, **log_reg_args)
             if reg_or_svm == "svm":
-                X_train, X_test = pref_svm.standardize(X_train, X_test, is_kfold=True)
+                X_train, X_test, _, y_train= pref_svm.standardize_and_reduce(X_train, X_test, y_train, importance_threshold, is_kfold=True)
                 svm_model, y_pred, y_scores = pref_svm.train_predict_model(
                     X_train, y_train, X_test, **svm_args)
             
@@ -424,19 +427,17 @@ def train_test_user_pref(combined_df, reg_or_svm="svm", log_reg_args = None, svm
 
 #%% K Means Recommendation Model Silhouette Score Evaluation
 
-def silhouette_score_recommendation(clusters_range, df):
+def silhouette_score_recommendation(clusters_range, macro_ratios_df):
     # calculate silhouette score for various numbers of clusters
     # initialize list to store scores
     sil_scores = []
     # create model for clusters in range
     for cluster_num in clusters_range:
-        kmean, labels = cluster.create_model(cluster_num, df,
+        kmean, labels = cluster.create_model(cluster_num, macro_ratios_df,
                                              purpose="Sil_score")
-        score = silhouette_score(df, labels)
+        score = silhouette_score(macro_ratios_df, labels)
         sil_scores.append(score)
-    return sil_scores
 
-def visualize_silhouette_score_recommendation(clusters_range, sil_scores):
     # Plot
     plt.figure()
     plt.plot(clusters_range, sil_scores)
@@ -447,6 +448,7 @@ def visualize_silhouette_score_recommendation(clusters_range, sil_scores):
     # save
     filename = "Sil_Score_Recommendation_Model.png"
     plt.savefig(filename)
+    return sil_scores, macro_ratios_df
 
 #%% K Means Recommendation Model Visualization
 
@@ -503,7 +505,6 @@ def visualize_recommendation_3D(macro_ratios_df):
 #%% Run
 
 if __name__ == '__main__':
-    """
     # User Preference Model
     # Get ROC with AUC, conf matrix, and classification report for user preference
     # model with user independent evaluation
@@ -533,7 +534,6 @@ if __name__ == '__main__':
     avg_f1 = np.mean(f1s)
     print("accuracy:", avg_accuracy)
     print("f1:", avg_f1)
-    """
 
     """
     User preference next steps
@@ -548,12 +548,14 @@ if __name__ == '__main__':
 
     # K means recommendation model
     # get data
-    macro_ratios_df = cluster.get_macro_ratios()
+    """
+    cleaned_recipes_df = cluster.get_cleaned_recipes()
+    macro_ratios_df = cluster.get_macro_ratios(cleaned_recipes_df)
     # Silhouette Score plot for recommendation model
     # set cluster range to try
     clusters_range = range(3,17)
-    sil_scores = silhouette_score_recommendation(clusters_range, macro_ratios_df)
-    visualize_silhouette_score_recommendation(clusters_range, sil_scores)
+    sil_scores, macro_ratios_df = silhouette_score_recommendation(clusters_range, macro_ratios_df)
+    """
     """
     showing that optimal # clusters is 4, but still only has a sil score of .42,
     indicating that there is room for improvement.

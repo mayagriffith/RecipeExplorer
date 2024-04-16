@@ -42,14 +42,15 @@ def main():
     if reg_or_svm == "svm":
         results = []
         # try different C, kernels, and gamma
-        print('            |                 | kernel = rbf   | kernel = poly | kernel = sigmoid')
-        print('---------------------------------------------------------------------------------')
-        # testing C from .001 (more comprimise) to 100 (less comprimise)
-        for C in np.logspace(-3,2,num=15):
-            for gamma in np.logspace(-3,2,num=15):
+        #print('            |                 | kernel = rbf   | kernel = poly | kernel = sigmoid')
+        #print('---------------------------------------------------------------------------------')
+        print('            |                 | kernel = rbf   | kernel = sigmoid')
+        print('-----------------------------------------------------------------')
+        for C in np.logspace(1,4,num=5): #high c low gamma seems to be key (balance needed complexity with overfitting reduction)
+            for gamma in np.logspace(-4,-1,num=5):
                 print(f' {C = :<7.3f}|', end='')
                 print(f" {gamma = :<7.3f}|", end="")
-                for kernel in ["rbf", "poly", "sigmoid"]:
+                for kernel in ["rbf", "sigmoid"]: # poly never wins, removed to reduce runtime
                     kwargs = {"kernel": kernel, "C": C, "probability": True, "gamma": gamma}
                     accuracies, f1s, true_labels, _, pred_scores = (
                         evaluate.k_fold_CV(combined_df, reg_or_svm, log_reg_args = None, svm_args = kwargs))
