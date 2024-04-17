@@ -2,8 +2,7 @@ import pandas as pd
 import random
 import os
 
-# A per-category target for the number of votes.
-TARGET = 100
+TARGET = 40
 
 current_directory = os.getcwd()
 extract_path = os.path.join(current_directory, "RecipeData")
@@ -61,7 +60,7 @@ def main():
     recipe_df = pd.DataFrame(recipes, columns=['Title', 'Vote'])
 
     # Save to CSV without column headers
-    recipe_df.to_csv(f'cleanedVotes/{name}.csv', index=False, header=False)
+    recipe_df.to_csv(f'cleanedVotes/{name}.csv', mode='a', index=False, header=False)
 
     print(f"Voting complete. Data saved to {name}.csv.")
 
