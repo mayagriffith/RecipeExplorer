@@ -19,11 +19,14 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
 
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.tree import plot_tree
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-def get_cleaned_recipes():
+def get_cleaned_recipes(tag_list):
     cleaned_recipes_df = pd.read_csv('RecipeData/cleaned_recipes.csv')
     
     # Perhaps can take sodium and other variables into consideration in the future
@@ -32,24 +35,6 @@ def get_cleaned_recipes():
     # Drop any rows with 0 calories
     cleaned_recipes_df = cleaned_recipes_df[cleaned_recipes_df['calories'] > 0]
     
-    # All rows, only tag cols (six and onwards)
-    # Specific tag columns to look at:
-    tag_list = []
-    # tag_list.append('gourmet')
-    # tag_list.append('side')
-    # tag_list.append('dinner')
-    # tag_list.append('lunch')
-    tag_list.append('dessert')
-    # tag_list.append('appetizer')
-    tag_list.append('tomato')
-    tag_list.append('ham')
-    tag_list.append('onion')
-    tag_list.append('chicken')
-    tag_list.append('lettuce')
-    tag_list.append('fish')
-    tag_list.append('egg')
-    tag_list.append('beef')
-    tag_list.append('bread')
 
     tag_cols = cleaned_recipes_df[tag_list]
     # tag_cols = cleaned_recipes_df.iloc[:, 5:]# All tags version
@@ -75,40 +60,77 @@ def get_cleaned_recipes():
     # Create a carb macro column
     cleaned_recipes_df['carb'] = (cleaned_recipes_df['calories'] - 4*cleaned_recipes_df['protein'] - 9*cleaned_recipes_df['fat']) / 4
     
-    
-    # cleaned_recipes_df['tags'] = concat_tag_cols
-    
-    return cleaned_recipes_df, tag_cols, tag_list
+    return cleaned_recipes_df, tag_cols #, tag_list
 
 # Create a decision tree model based on the data
 
 
 def create_model(features_df, tags_df):
-    dtc = DecisionTreeClassifier(random_state=0)
+    # classifier = RandomForestClassifier(random_state=0)
+    classifier = DecisionTreeClassifier(random_state=0, max_leaf_nodes=100)
     
-    x_train, x_test, y_train, y_test = train_test_split(features_df, tags_df, test_size=0.25, random_state = 0)
     
-    dtc.fit(x_train, y_train)
-    decision_tree_score = dtc.score(x_test, y_test)
+    x_train, x_test, y_train, y_test = train_test_split(features_df, tags_df, test_size=0.25)
     
-    print(decision_tree_score)
-    return dtc #decision_tree_score
+    classifier.fit(x_train, y_train)
+    score = classifier.score(x_test, y_test)
+    
+    return classifier, score #decision_tree_score
 
 
 
 #
 if __name__ == "__main__":
-    cleaned_recipes_df, tags_df, tag_list = get_cleaned_recipes()
+    # Specific tag columns to look at:
+    tag_list = []
+    # tag_list.append('gourmet')
+    
+    # tag_list.append('side')
+    # tag_list.append('dinner')
+    # tag_list.append('lunch')
+    # tag_list.append('dessert')
+    # tag_list.append('appetizer')
+    
+    tag_list.append('chicken')
+    tag_list.append('fish')
+    # tag_list.append('cod')
+    # tag_list.append('salmon')
+    # tag_list.append('beef')
+    # tag_list.append('beef rib')
+    # tag_list.append('bean')
+    
+    
+    # # tag_list.append('bread')
+    # tag_list.append('pasta')
+    # tag_list.append('cake')
+    
+
+    # # tag_list.append('tomato')
+    # # tag_list.append('onion')
+    # tag_list.append('potato')   
+    # # tag_list.append('turnip')
+    
+    
+    # # tag_list.append('low cal')
+    # tag_list.append('lettuce')
+    # tag_list.append('spinach')
+    # tag_list.append('bell pepper')
+    
+    
+    
+    
+    cleaned_recipes_df, tags_df = get_cleaned_recipes(tag_list)
     
     # Implement the ratios later? Or maybe not at all
     # macro_ratios_df = get_macro_ratios(cleaned_recipes_df)
     # print(create_model(cleaned_recipes_df.iloc[:,1:], tags_df))
-    dtc = create_model(cleaned_recipes_df.iloc[:,1:], tags_df)
-    
+    classifier, score = create_model(cleaned_recipes_df.iloc[:,1:], tags_df)
+    print(score)
     
     # cleaned_recipes_df['label'] = kmean.labels_ # This will give which recipes belong to each label
     
-    
+    plot_tree(classifier)
+    #%%
     
     # Get user input
     print("First, please input your prefered macro amount") # asking for amount here, but it is really more like the ratios
@@ -129,7 +151,7 @@ if __name__ == "__main__":
     
     
     # Extract the label from the prediction
-    user_input_label = dtc.predict(user_input_df)[0]
+    user_input_label = classifier.predict(user_input_df)[0]
     user_input_label = [bool(value) for value in user_input_label]
     print('\n\n\n')
     print('Tags:', np.asarray(tag_list)[user_input_label])
