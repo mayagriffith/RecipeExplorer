@@ -4,11 +4,55 @@
     <meta charset="UTF-8">
     <title>Ready to Train</title>
 </head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+    .container {
+        text-align: center;
+        background-color: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        width: 90%;
+        max-width: 600px;
+    }
+    h1 {
+        color: #333;
+    }
+    p {
+        color: #555;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    button {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+    }
+    button:hover {
+        background-color: #004494;
+    }
+</style>
 <body>
+    <div class="container">
     <h1>Ready to Train the Model</h1>
     <p>Click the button below when you're ready to start training the model with your votes.</p>
     <form action="{{ url_for('start_training', user_name=user_name) }}" method="post">
         <button type="submit">Start Training</button>
     </form>
+</div>
 </body>
 </html>

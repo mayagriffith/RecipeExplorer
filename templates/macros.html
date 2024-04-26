@@ -4,6 +4,68 @@
     <meta charset="UTF-8">
     <title>Set Your Macronutrient Goals</title>
 </head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .container {
+        text-align: center;
+        background-color: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        width: 90%;
+        max-width: 600px;
+    }
+    h1 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+    label {
+        font-size: 16px;
+        color: #666;
+        display: block;
+        margin-top: 20px;
+    }
+    input[type='number'] {
+        padding: 10px;
+        margin-top: 5px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        width: calc(100% - 24px);
+        display: block;
+    }
+    input[type='number']:focus {
+        border-color: #0056b3;
+    }
+    button {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 30px;
+        font-size: 16px;
+    }
+    button:hover {
+        background-color: #004494;
+    }
+    br {
+        content: "";
+        margin: 20px;
+        display: block;
+        line-height: 20px;
+    }
+</style>
+<div class="container">
 <body>
     <h1>Enter Your Macronutrient Goals</h1>
     <form action="/set_goals" method="post">
@@ -18,5 +80,6 @@
         <input type="number" id="sodium" name="sodium" required><br>
         <button type="submit">Submit Goals</button>
     </form>
+</div>
 </body>
 </html>

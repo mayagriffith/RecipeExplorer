@@ -4,12 +4,75 @@
     <meta charset='UTF-8'>
     <title>Welcome to Recipe Explorer</title>
 </head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .container {
+        text-align: center;
+        background-color: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        width: 90%;
+        max-width: 600px;
+    }
+    h1 {
+        color: #333;
+        font-size: 24px;
+    }
+    h3 {
+        color: #555;
+        font-size: 16px;
+        font-weight: normal;
+    }
+    label {
+        font-size: 14px;
+        color: #666;
+    }
+    input[type='text'] {
+        padding: 8px;
+        margin-top: 8px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        width: calc(100% - 22px);
+        display: block;
+    }
+    input[type='text']:focus {
+        border-color: #0056b3;
+    }
+    button {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+    button:hover {
+        background-color: #004494;
+    }
+</style>
 <body>
+    <div class="container">
    <h1>Welcome to Recipe Explorer</h1>
+   <h3>This is an application to recommend recipes based on your
+    preferences and nutritional goals using machine learning techniques.
+   </h3>
     <form action='/set_user' method='post'>
         <label for='name'>What is your name?</label>
         <input type='text' id='name' name='name' required>
         <button type='submit'>Submit</button>
     </form>
+</div>
 </body>
 </html>

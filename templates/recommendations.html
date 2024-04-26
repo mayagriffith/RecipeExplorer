@@ -4,18 +4,57 @@
     <meta charset="UTF-8">
     <title>Your Recipe Recommendations</title>
 </head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+    .container {
+        text-align: center;
+        background-color: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        width: 90%;
+        max-width: 800px;
+        margin-bottom: 20px;
+    }
+    h1 {
+        color: #333;
+    }
+    ul {
+        text-align: left;
+        list-style-position: inside;
+        padding: 0;
+    }
+    li {
+        padding: 8px 0;
+        font-size: 16px;
+        color: #555;
+    }
+</style>
 <body>
+    <div class="container">
     <h1>Top 5 Recommended Recipes based on your likes</h1>
     <ul>
         {% for _, row in recommendations.iterrows() %}
             <li>{{ row['title'] }} - Predicted Score: {{ row['predicted_likes'] }}</li>
         {% endfor %}
     </ul>
+    </div> 
+    <div class="container">
     <h1>Top recipes based on your nutional goals</h1>
     <ul>
         {% for _, row in tree_output.iterrows() %}
             <li>{{ row['title'] }} </li>
         {% endfor %}
     </ul>
+</div>
 </body>
 </html>

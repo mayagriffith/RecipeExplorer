@@ -4,7 +4,59 @@
     <meta charset="UTF-8">
     <title>Vote on Recipes</title>
 </head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+    .container {
+        text-align: center;
+        background-color: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        width: 90%;
+        max-width: 600px;
+    }
+    h1, h2 {
+        color: #333;
+    }
+    ul {
+        text-align: left;
+        list-style-position: inside;
+    }
+    li {
+        padding: 8px 0;
+    }
+    button {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 10px 5px;
+    }
+    button:hover {
+        background-color: #004494;
+    }
+
+    .red{
+        background-color: red;
+    }
+    .green{
+        background-color: green;
+    }
+</style>
 <body>
+    <div class="container">
     <h1>Recipe: {{ title }}</h1>
     <h2>Ingredients:</h2>
     <ul>
@@ -13,11 +65,12 @@
         {% endfor %}
     </ul>
     <form action="{{ url_for('submit_vote', user_name=user_name, title=title) }}" method="post">
-        <button name="vote" value="like" type="submit">Yes</button>
-        <button name="vote" value="dislike" type="submit">No</button>
+        <button class="green" name="vote" value="like" type="submit">Yes</button>
+        <button class="red" name="vote" value="dislike" type="submit">No</button>
     </form>
     <form action="{{ url_for('prepare_training', user_name=user_name) }}" method="get">
         <button type="submit">I'm Done Voting</button>
     </form>
+</div>
 </body>
 </html>
