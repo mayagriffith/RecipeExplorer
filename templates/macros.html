@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Set Your Macronutrient Goals</title>
+</head>
+<body>
+    <h1>Enter Your Macronutrient Goals</h1>
+    <form action="/set_goals" method="post">
+        <input type="hidden" name="user_name" value="{{ user_name }}">
+        <label for="carbs">Carbohydrates (grams):</label>
+        <input type="number" id="carbs" name="carbs" required><br>
+        <label for="proteins">Proteins (grams):</label>
+        <input type="number" id="proteins" name="proteins" required><br>
+        <label for="fats">Fats (grams):</label>
+        <input type="number" id="fats" name="fats" required><br>
+        <label for="sodium">sodium (mg):</label>
+        <input type="number" id="sodium" name="sodium" required><br>
+        <button type="submit">Submit Goals</button>
+    </form>
+</body>
+</html>

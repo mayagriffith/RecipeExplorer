@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ready to Train</title>
+</head>
+<body>
+    <h1>Ready to Train the Model</h1>
+    <p>Click the button below when you're ready to start training the model with your votes.</p>
+    <form action="{{ url_for('start_training', user_name=user_name) }}" method="post">
+        <button type="submit">Start Training</button>
+    </form>
+</body>
+</html>

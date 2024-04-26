@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Recipe Recommendations</title>
+</head>
+<body>
+    <h1>Top 5 Recommended Recipes based on your likes</h1>
+    <ul>
+        {% for _, row in recommendations.iterrows() %}
+            <li>{{ row['title'] }} - Predicted Score: {{ row['predicted_likes'] }}</li>
+        {% endfor %}
+    </ul>
+    <h1>Top recipes based on your nutional goals</h1>
+    <ul>
+        {% for _, row in tree_output.iterrows() %}
+            <li>{{ row['title'] }} </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

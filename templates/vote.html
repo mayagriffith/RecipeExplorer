@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vote on Recipes</title>
+</head>
+<body>
+    <h1>Recipe: {{ title }}</h1>
+    <h2>Ingredients:</h2>
+    <ul>
+        {% for ingredient in ingredients %}
+            <li>{{ ingredient }}</li>
+        {% endfor %}
+    </ul>
+    <form action="{{ url_for('submit_vote', user_name=user_name, title=title) }}" method="post">
+        <button name="vote" value="like" type="submit">Yes</button>
+        <button name="vote" value="dislike" type="submit">No</button>
+    </form>
+    <form action="{{ url_for('prepare_training', user_name=user_name) }}" method="get">
+        <button type="submit">I'm Done Voting</button>
+    </form>
+</body>
+</html>
