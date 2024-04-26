@@ -1,5 +1,5 @@
 '''
-@author Nick Bosley, Nate Gaylinn
+@author Nick Bosley, Nate Gaylinn, Maya Griffith
 
 cluster search will (ideally) sort the existing recipes into K groups based on
 the proportions of cal_protein / calories, cal_fat / calories, and cal_carb / calories
@@ -18,6 +18,9 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import train_test_split
 
 from sklearn.cluster import KMeans
+
+import plotly.express as px
+
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,6 +43,7 @@ def get_macro_ratios(cleaned_recipes_df=None):
     cleaned_recipes_df['carb'] = (cleaned_recipes_df['calories'] - 4*cleaned_recipes_df['protein'] - 9*cleaned_recipes_df['fat']) / 4
 
     macro_ratios_df = pd.DataFrame()
+    macro_ratios_df['title'] = cleaned_recipes_df['title']
     
     macro_ratios_df['carb_ratio'] = 4 * cleaned_recipes_df['carb'] / cleaned_recipes_df['calories']
     
@@ -59,10 +63,11 @@ n_clusters = 4 # Change this to modify algorithm stinginess- using 4 b/c best si
 # Sil_score to easily get silhouette score
 def create_model(n_clusters, macro_ratios_df, purpose="Recommending"):
     kmean = KMeans(n_clusters)
+    columns_to_cluster = ['carb_ratio', 'fat_ratio', 'protein_ratio']
     if purpose == "Recommending":
-        kmean.fit(macro_ratios_df)
+        kmean.fit(macro_ratios_df[columns_to_cluster])
     elif purpose == "Sil_score":
-        labels = kmean.fit_predict(macro_ratios_df)
+        labels = kmean.fit_predict(macro_ratios_df[columns_to_cluster])
     else:
         print("Purpose must either be 'Recommending' or 'Sil_score'")
     if purpose == "Sil_score":
@@ -75,11 +80,12 @@ def create_model(n_clusters, macro_ratios_df, purpose="Recommending"):
 #%%
 if __name__ == "__main__":
     macro_ratios_df = get_macro_ratios()
+    
     kmean = create_model(n_clusters, macro_ratios_df)
     
     
-    cleaned_recipes_df['label'] = kmean.labels_ # This will give which recipes belong to each label
     
+    macro_ratios_df['label'] = kmean.labels_ # This will give which recipes belong to each label
     
     
     #%% Get user input
@@ -106,4 +112,17 @@ if __name__ == "__main__":
     user_input_label = kmean.predict(user_input_df)[0]
     # make it so that all columns are displayed so protein and fat can be viewed easily
     pd.set_option('display.max_columns', None)
-    print(cleaned_recipes_df[cleaned_recipes_df['label'] == user_input_label].head())
+    print(macro_ratios_df[macro_ratios_df['label'] == user_input_label].head())
+
+    #Plotting the clusters
+    user_input_df['label'] = 'User Input' 
+    combined_df = pd.concat([macro_ratios_df, user_input_df], ignore_index=True)
+
+    combined_df = pd.concat([macro_ratios_df, user_input_df], ignore_index=True)
+    fig = px.scatter(combined_df, x='fat_ratio', y='protein_ratio', color='label',
+                    hover_data=['title', 'carb_ratio', 'fat_ratio', 'protein_ratio'],
+                    title='Explore Recipes Nutritionally similar')
+    fig.add_traces(px.scatter(user_input_df, x='fat_ratio', y='protein_ratio', color='label').data)
+    fig.update_traces(marker=dict(size=12, line=dict(width=2)),
+                    selector=dict(mode='markers'))
+    fig.show()
