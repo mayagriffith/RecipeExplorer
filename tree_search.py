@@ -37,22 +37,6 @@ def get_cleaned_recipes(tag_list):
     
 
     tag_cols = cleaned_recipes_df[tag_list]
-    # tag_cols = cleaned_recipes_df.iloc[:, 5:]# All tags version
-    
-    # Try with the tag_cols outright
-    # # Get the number of tags to define the string length for the labels
-    # num_tags = len(tag_cols.iloc[0])
-    
-    # # Initialize a concatenated column
-    # concat_tag_cols = np.zeros(tag_cols.iloc[:,0].shape, dtype=f'U{num_tags}') #pd.DataFrame(np.zeros(tag_cols.iloc[:,0].shape, dtype=str))
-    
-    # A bit unprofessional, but it gets there
-    # for column in tag_cols:
-    #     for row_index in range(len(concat_tag_cols)):
-    #         if tag_cols[column].iloc[row_index] == 0.0:
-    #             concat_tag_cols[row_index] += '0'
-    #         else:
-    #             concat_tag_cols[row_index] += '1'
                 
     # Drop all columns except the macros, titles, and calories
     cleaned_recipes_df = cleaned_recipes_df[['title', 'calories', 'protein', 'fat', 'sodium']]
@@ -65,17 +49,18 @@ def get_cleaned_recipes(tag_list):
 # Create a decision tree model based on the data
 
 
-def create_model(features_df, tags_df):
+def create_model(features_df, tags_df, test_size=0.2):
     # classifier = RandomForestClassifier(random_state=0)
-    classifier = DecisionTreeClassifier(random_state=0)
+    classifier = DecisionTreeClassifier(random_state=0, max_leaf_nodes=75)
     
     
-    x_train, x_test, y_train, y_test = train_test_split(features_df, tags_df, test_size=0.25, random_state=0)
+    x_train, x_test, y_train, y_test = train_test_split(features_df, tags_df, test_size=test_size, random_state=0)
     
     classifier.fit(x_train, y_train)
     score = classifier.score(x_test, y_test)
+    # score_train = classifier.score(x_train, y_train)
     
-    return classifier, score #decision_tree_score
+    return classifier, score#, score_train #decision_tree_score
 
 
 
@@ -83,13 +68,6 @@ def create_model(features_df, tags_df):
 if __name__ == "__main__":
     # Specific tag columns to look at:
     tag_list = []
-    # tag_list.append('gourmet')
-    
-    # tag_list.append('side')
-    # tag_list.append('dinner')
-    # tag_list.append('lunch')
-    # tag_list.append('dessert')
-    # tag_list.append('appetizer')
     
     tag_list.append('chicken')
     tag_list.append('fish')
@@ -100,7 +78,6 @@ if __name__ == "__main__":
     tag_list.append('bean')
     
     tag_list.append('pasta')
-    # tag_list.append('potato')   
     
     tag_list.append('lettuce')
     tag_list.append('spinach')
@@ -114,14 +91,50 @@ if __name__ == "__main__":
     total_score = 1
     for tag in tag_list:
         tag_series = tags_df[tag]
-        classifier, score = create_model(cleaned_recipes_df.iloc[:,1:], tag_series)
+        classifier, score = create_model(cleaned_recipes_df.iloc[:,1:], tag_series, 0.2)
         print(tag, score)
         
         total_score *= score
         # Put the tree in the forest
         forest.append(classifier)
-
+        
     print(f'total {total_score}')
+    
+    # total_errors = []
+    # total_errors_train = []
+    # train_sizes = np.arange(0.01,1.0,0.05)
+    # # Use to retrieve train vs. test error plot
+    # for train_size in train_sizes:
+        
+    #     forest = []
+        
+        
+    #     cleaned_recipes_df, tags_df = get_cleaned_recipes(tag_list)
+    #     total_score = 1
+    #     total_score_train = 1
+    #     for tag in tag_list:
+    #         tag_series = tags_df[tag]
+    #         classifier, score, score_train = create_model(cleaned_recipes_df.iloc[:,1:], tag_series, 1-train_size)
+    #         print(tag, score)
+            
+    #         total_score *= score
+    #         total_score_train *= score_train
+    #         # Put the tree in the forest
+    #         forest.append(classifier)
+            
+    #     total_errors.append(1-total_score)
+    #     total_errors_train.append(1-total_score_train)
+    #     print(f'total {total_score}')
+    
+    # plt.figure(2,clear=True)
+    # plt.plot(train_sizes*100, total_errors_train, label='Train')
+    # plt.plot(train_sizes*100, total_errors, label='Test')
+    
+    # plt.xlabel('Training Data Used')
+    # plt.ylabel('Error (1-Accuracy)')
+    # plt.legend()
+    # plt.title('Test Error vs. Training Data Levels Forest')
+    
     #%%
     
     # Get user input
