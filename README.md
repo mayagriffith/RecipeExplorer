@@ -12,4 +12,4 @@ Create_votes.py allows a user to vote on random recipes, that will be used as da
 
 Evaluate.py allows a user to view performance metrics for the user preference and recommendation models. For the user preference model: includes user independent evaluation as well as leave-one-group-out cross-validation, average accuracy and F1 scores over folds, ROC curve and ROC-AUC calculation, and confusion matrix visualization. For the recommendation model: includes silhouette score calculation and t-SNE reduced dimensionality visualization of clusters.
 
-A full report regarding this project can be found within the file RecipeExplorerFinalReport.pdf: https://github.com/mayagriffith/RecipeExplorer/blob/7c05cfde43492f37d3a1c963042f88279158e5c2/Recipe%20Explorer%20Final%20Report.pdf
+A full report regarding this project can be found within the file Recipe_Explorer_Final_Report.pdf: https://github.com/mayagriffith/RecipeExplorer/blob/7c05cfde43492f37d3a1c963042f88279158e5c2/Recipe%20Explorer%20Final%20Report.pdf
