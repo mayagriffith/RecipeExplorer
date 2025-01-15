@@ -1,6 +1,5 @@
 # RecipeExplorer
-Machine Learning project
-In progress
+
 
 Run cleaning_data.py and this will extract RecipeData.zip, clean the files and add an extra clean csv to reference.
 It is also zipped for your convience, but some directories may need to be modified
